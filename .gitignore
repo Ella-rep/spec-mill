@@ -1,0 +1,25 @@
+node_modules/
+dist/
+*.log
+.env*
+out-*.spec.ts
+codegen-sample.txt
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+.vscode/
+.idea/
+
+# Claude Code local config
+.claude/
+CLAUDE.md
+
+# Graphify output
+graphify-out/
+
+# Spec Kit tooling
+.specify/
+
+admin_recette_excel.spec.ts
+ExportXray_Admin.csv

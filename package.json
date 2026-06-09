@@ -1,0 +1,14 @@
+{
+  "name": "playwright-moulinette",
+  "version": "1.0.0",
+  "description": "Convertisseurs de fichiers de tests de non-régression vers des specs Playwright",
+  "scripts": {
+    "csv-to-spec": "ts-node scripts/csv-to-spec.ts",
+    "codegen-to-spec": "ts-node scripts/codegen-to-spec.ts",
+    "init-utils": "ts-node scripts/init-utils.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.5"
+  }
+}
