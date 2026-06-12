@@ -262,17 +262,32 @@ function generateSpec(cases: TestCase[]): string {
   lines.push(`import { test, expect } from '@playwright/test';`);
   lines.push('');
   lines.push(`test.describe.configure({ mode: 'serial' });`);
+  lines.push('');
+  lines.push(`/**`);
+  lines.push(` * Connexion à l'application — à compléter selon votre système d'authentification.`);
+  lines.push(` * Appelée automatiquement au début de chaque test.`);
+  lines.push(` *`);
+  lines.push(` * Exemple avec utils.ts (système Gardian) :`);
+  lines.push(` *   await login(page, TEST_USERS.admin.login, TEST_USERS.admin.password);`);
+  lines.push(` *   await postLogin(page, TEST_USERS.admin.login);`);
+  lines.push(` */`);
+  lines.push(`async function loginBeforeTest(page: any, testInfo: any, stepIndex: number): Promise<number> {`);
+  lines.push(`  await test.step('Connexion', async () => {`);
+  lines.push(`    const attenduEtape = "Connexion à l'application";`);
+  lines.push(`    await testInfo.attach('attendu-etape', { body: attenduEtape, contentType: 'text/plain' });`);
+  lines.push(`    await runStep(page, testInfo, 'connexion', stepIndex++, async () => {`);
+  lines.push(`      // TODO: implémenter la connexion à votre application`);
+  lines.push(`      // Exemple Gardian : await login(page, TEST_USERS.admin.login, TEST_USERS.admin.password);`);
+  lines.push(`    });`);
+  lines.push(`  });`);
+  lines.push(`  return stepIndex;`);
+  lines.push(`}`);
 
   for (const tc of cases) {
     lines.push('');
     lines.push(`test(${JSON.stringify(tc.summary)}, async ({ page }, testInfo) => {`);
     lines.push(`  let stepIndex = 1;`);
-
-    if (tc.profile === 'Admin') {
-      lines.push(`  stepIndex = await loginAdmin(page, testInfo, stepIndex);`);
-    } else if (tc.profile) {
-      lines.push(`  // TODO: login as ${tc.profile}`);
-    }
+    lines.push(`  stepIndex = await loginBeforeTest(page, testInfo, stepIndex);`);
 
     for (const step of tc.steps) {
       const attendu = step.expectedResult

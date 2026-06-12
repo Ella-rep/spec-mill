@@ -21,6 +21,16 @@ Ces scripts automatisent cette conversion.
 npm install
 ```
 
+- Puis dans le dossier spec-mill :
+
+```bash
+npm i --save-dev @types/node
+```
+
+> [!CAUTION]
+> **Attention:** J'ai été bloquée dans WSL
+> J'ai pu exécuter mes installations et scripts dans powershell
+
 ### Initialiser `utils.ts` dans un projet cible
 
 Les specs générées importent les helpers depuis `utils.ts` à la racine du projet cible. Ce fichier contient les fonctions `runStep`, `captureStep`, `login`, `postLogin` et les credentials de test.
@@ -95,10 +105,40 @@ Fichier exporté depuis Xray, séparateur `;`, encodage UTF-8. Colonnes utilisé
 | 2 | Identificateur de cas de test | Regroupe les étapes d'un même test |
 | 3 | Résumé | Nom du bloc `test()` |
 | 4 | Action | Description de l'étape |
-| 6 | Résultat Attendu | Valeur de `attenduEtape` |
-| 8 | Données | Profil utilisateur (`Admin` → injection `loginAdmin`) |
+| 6 | Résultat Attendu | Base pour générer les assertions Playwright |
+| 8 | Données | Profil utilisateur (conservé en métadonnée, non utilisé pour le login) |
 
 Les lignes dont la colonne "Identificateur" est vide héritent de l'identifiant de la ligne précédente. Les lignes sans "Action" sont ignorées.
+
+### Fonction de connexion générée
+
+Chaque spec généré contient une fonction `loginBeforeTest` à compléter :
+
+```typescript
+/**
+ * Connexion à l'application — à compléter selon votre système d'authentification.
+ * Appelée automatiquement au début de chaque test.
+ */
+async function loginBeforeTest(page: any, testInfo: any, stepIndex: number): Promise<number> {
+  await test.step('Connexion', async () => {
+    const attenduEtape = "Connexion à l'application";
+    await testInfo.attach('attendu-etape', { body: attenduEtape, contentType: 'text/plain' });
+    await runStep(page, testInfo, 'connexion', stepIndex++, async () => {
+      // TODO: implémenter la connexion à votre application
+      // Exemple Gardian : await login(page, TEST_USERS.admin.login, TEST_USERS.admin.password);
+    });
+  });
+  return stepIndex;
+}
+```
+
+Cette fonction est appelée en début de chaque test. Remplacer le commentaire `TODO` par la logique de connexion propre à votre application :
+
+| Système | Implémentation |
+|---------|---------------|
+| SSO basique | `await page.goto('/login'); await page.fill('#user', '...'); await page.fill('#pass', '...'); await page.click('[type=submit]');` |
+| Token JWT | `await page.evaluate(() => localStorage.setItem('token', '...'));` |
+| Pas d'auth | Laisser le corps vide |
 
 ### Ce que produit le script
 
@@ -108,9 +148,13 @@ import { test, expect } from '@playwright/test';
 
 test.describe.configure({ mode: 'serial' });
 
+async function loginBeforeTest(page: any, testInfo: any, stepIndex: number): Promise<number> {
+  // ... voir ci-dessus
+}
+
 test('Nom du cas de test', async ({ page }, testInfo) => {
   let stepIndex = 1;
-  stepIndex = await loginAdmin(page, testInfo, stepIndex); // si profil Admin
+  stepIndex = await loginBeforeTest(page, testInfo, stepIndex);
 
   await test.step('Action de l\'étape', async () => {
     const attenduEtape = "Résultat attendu";

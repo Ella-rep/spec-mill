@@ -1,5 +1,5 @@
 {
-  "name": "playwright-moulinette",
+  "name": "spec-mill",
   "version": "1.0.0",
   "description": "Convertisseurs de fichiers de tests de non-régression vers des specs Playwright",
   "scripts": {
